@@ -18,7 +18,7 @@ data = my_file.read()
 # when newline ('\n') is seen. 
 items = data.split("\n") 
 my_file.close() 
-items = items[:1000]
+items = items[1000:100000]
 print("Fim carregamento")
 
 # Informações de autenticação da API de obtenção do token
@@ -28,7 +28,7 @@ client_secret = "nSSTNzbs6xPACsEnfqeQD0_eiCca"
 # Número máximo de solicitações concorrentes
 max_concurrent_requests = 14
 
-
+batch_size = 1000
 # Variável para armazenar o token atual e o horário de expiração
 token_refresh_interval = None
 current_token = None
@@ -54,7 +54,7 @@ async def get_bearer_token():
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(bearer_api_url, headers=headers, data=data, timeout=10)
+            response = await client.post(bearer_api_url, headers=headers, data=data, timeout=100)
     except httpx.ConnectTimeout:
         raise Exception("Falha na conexão: não foi possível estabelecer uma conexão com o servidor")
 
@@ -88,10 +88,18 @@ async def fetch_data(item, session):
         else:
             print(f"Requisição para {url} falhou com status {response.status_code}")
 
-async def main():
+async def fetch_data_batch(batch):
+    bearer_token = await get_bearer_token()
     async with httpx.AsyncClient() as session:
-        tasks = [fetch_data(item, session) for item in items]
+        tasks = [fetch_data(item, session) for item in batch]
         await asyncio.gather(*tasks)
+
+# Divide a lista de itens em lotes de tamanho 'batch_size'
+item_batches = [items[i:i + batch_size] for i in range(0, len(items), batch_size)]
+
+async def main():
+    for batch in item_batches:
+        await fetch_data_batch(batch)
 
 if __name__ == "__main__":
     asyncio.run(main())
