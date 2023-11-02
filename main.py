@@ -74,7 +74,7 @@ async def fetch_data(item, session):
     url = f"{base_url}/{item}"
     async with semaphore:
         try:
-            response = await session.get(url, headers=headers, timeout=10)
+            response = await session.get(url, headers=headers, timeout=100)
         except httpx.ConnectTimeout:
             print(f"Timeout de conexão ao acessar {url}")
             return
