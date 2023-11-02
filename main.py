@@ -54,7 +54,7 @@ async def get_bearer_token():
 
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(bearer_api_url, headers=headers, data=data, timeout=10)
+            response = await client.post(bearer_api_url, headers=headers, data=data, timeout=100)
     except httpx.ConnectTimeout:
         raise Exception("Falha na conexão: não foi possível estabelecer uma conexão com o servidor")
 
@@ -74,7 +74,7 @@ async def fetch_data(item, session):
     url = f"{base_url}/{item}"
     async with semaphore:
         try:
-            response = await session.get(url, headers=headers, timeout=10)
+            response = await session.get(url, headers=headers, timeout=100)
         except httpx.ConnectTimeout:
             print(f"Timeout de conexão ao acessar {url}")
             return
